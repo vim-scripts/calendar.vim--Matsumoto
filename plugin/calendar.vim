@@ -2,9 +2,11 @@
 " What Is This: Calendar
 " File: calendar.vim
 " Author: Yasuhiro Matsumoto <mattn_jp@hotmail.com>
-" Last Change: Thu, 04 Nov 2004
-" Version: 1.4
+" Last Change: Tue, 17 Jan 2006
+" Version: 1.4a
 " Thanks:
+"     Noel Henson         : today action
+"     Per Winkvist        : bug report
 "     Peter Findeisen     : bug fix
 "     Chip Campbell       : gave a hint for 1.3z
 "     PAN Shizhu          : gave a hint for 1.3y
@@ -29,7 +31,7 @@
 "     Ray                 : bug fix
 "     Ralf.Schandl        : gave a hint for 1.3
 "     Bhaskar Karambelkar : bug fix
-"     Suresh Govindachar  : gave a hint for 1.2
+"     Suresh Govindachar  : gave a hint for 1.2, bug fix
 "     Michael Geddes      : bug fix
 "     Leif Wickland       : bug fix
 " Usage:
@@ -47,6 +49,11 @@
 "     <Leader>ch
 "       show horizontal calendar ...
 " ChangeLog:
+"     1.4a : bug fix, week numbenr was broken on 2005.
+"            added calendar_today action.
+"            bug fix, about wrapscan.
+"            bug fix, about today mark.
+"            bug fix, about today navigation.
 "     1.4  : bug fix, and one improvement.
 "            bug 1:
 "              when marking the current date, there is not distinguished e.g. between
@@ -263,13 +270,20 @@
 "       endfunction
 "       let calendar_sign = 'MyCalSign'
 "
+"     *if you want to hook calender when pressing 'today',
+"       add this to your .vimrc:
+"
+"       function MyCalToday()
+"       endfunction
+"       let calendar_today = 'MyCalToday'
+"
 "     *if you want to get the version of this.
 "       type below.
 "
 "       :echo calendar_version
 " GetLatestVimScripts: 52 1 :AutoInstall: calendar.vim
 
-let g:calendar_version = "1.4"
+let g:calendar_version = "1.4a"
 if &compatible
   finish
 endif
@@ -367,6 +381,9 @@ function! s:CalendarDoAction(...)
       exec substitute(maparg('<s-right>', 'n'), '<CR>', '', '')
     elseif navi == s:GetToken(g:calendar_navi_label, ',', 2)
       call Calendar(b:CalendarDir)
+      if exists('g:calendar_today')
+        exe "call " . g:calendar_today . "()"
+      endif
     else
       let navi = ''
     endif
@@ -375,13 +392,13 @@ function! s:CalendarDoAction(...)
         silent execute "normal! gg/\*\<cr>"
         return
       else
-	    setlocal ws
+        setlocal ws
         if curl < line('$')/2
           silent execute "normal! gg0/".navi."\<cr>"
         else
           silent execute "normal! G0/".navi."\<cr>"
         endif
-	    setlocal nows
+        setlocal nows
         return
       endif
     endif
@@ -631,7 +648,7 @@ function! Calendar(...)
         endif
       endif
       let vcolumn = vcolumn + 5
-      if vyear % 4 == 0 && vmnth >= 3
+      if ((vyear % 4 == 0 && vmnth >= 3) || (vyear-1) % 4 == 0)
         let viweek = viweek + 1
       endif
     endif
@@ -903,8 +920,8 @@ function! Calendar(...)
   else
     " make title
     if (!exists('s:bufautocommandsset'))
-      auto BufEnter *Calendar let b:sav_titlestring = &titlestring | let &titlestring = '%{strftime("%c")}'
-      auto BufLeave *Calendar let &titlestring = b:sav_titlestring
+      auto BufEnter *Calendar let b:sav_titlestring = &titlestring | let &titlestring = '%{strftime("%c")}' | let b:sav_wrapscan = &wrapscan
+      auto BufLeave *Calendar let &titlestring = b:sav_titlestring | let &wrapscan = b:sav_wrapscan
       let s:bufautocommandsset=1
     endif
 
@@ -927,10 +944,10 @@ function! Calendar(...)
     setlocal bufhidden=delete
     setlocal nonumber
     setlocal nowrap
-    setlocal nowrapscan
     setlocal norightleft
     setlocal foldcolumn=0
     setlocal modifiable
+    set nowrapscan
     let b:Calendar='Calendar'
     " is this a vertical (0) or a horizontal (1) split?
   endif
@@ -941,17 +958,17 @@ function! Calendar(...)
   " navi
   if exists('g:calendar_navi')
     let navi_label = '<'
-		\.s:GetToken(g:calendar_navi_label, ',', 1).' '
-		\.s:GetToken(g:calendar_navi_label, ',', 2).' '
-		\.s:GetToken(g:calendar_navi_label, ',', 3).'>'
+        \.s:GetToken(g:calendar_navi_label, ',', 1).' '
+        \.s:GetToken(g:calendar_navi_label, ',', 2).' '
+        \.s:GetToken(g:calendar_navi_label, ',', 3).'>'
     if dir
       let navcol = vcolumn + (vcolumn-strlen(navi_label)+2)/2
     else
       let navcol = (vcolumn-strlen(navi_label)+2)/2
     endif
-	if navcol < 3
-	  let navcol = 3
-	endif
+    if navcol < 3
+      let navcol = 3
+    endif
 
     if g:calendar_navi == 'top'
       execute "normal gg".navcol."i "
@@ -1199,11 +1216,11 @@ function! s:CalendarHelp()
   redraw!
 endfunction
 
-hi def link CalNavi	Search
-hi def link CalSaturday	Statement
-hi def link CalSunday	Type
-hi def link CalRuler	StatusLine
-hi def link CalWeeknm	Comment
-hi def link CalToday	Directory
-hi def link CalHeader	Special
-hi def link CalMemo	Identifier
+hi def link CalNavi     Search
+hi def link CalSaturday Statement
+hi def link CalSunday   Type
+hi def link CalRuler    StatusLine
+hi def link CalWeeknm   Comment
+hi def link CalToday    Directory
+hi def link CalHeader   Special
+hi def link CalMemo     Identifier
