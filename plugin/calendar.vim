@@ -1,39 +1,42 @@
 "=============================================================================
 " What Is This: Calendar
 " File: calendar.vim
-" Author: Yasuhiro Matsumoto <mattn_jp@hotmail.com>
-" Last Change: Tue, 17 Jan 2006
-" Version: 1.4a
+" Author: Yasuhiro Matsumoto <mattn.jp@gmail.com>
+" Last Change: Wed, 02 May 2007
+" Version: 1.5
 " Thanks:
-"     Noel Henson         : today action
-"     Per Winkvist        : bug report
-"     Peter Findeisen     : bug fix
-"     Chip Campbell       : gave a hint for 1.3z
-"     PAN Shizhu          : gave a hint for 1.3y
-"     Eric Wald           : bug fix
-"     Sascha Wuestemann   : advise
-"     Linas Vasiliauskas  : bug report
-"     Per Winkvist        : bug report
-"     Ronald Hoelwarth    : gave a hint for 1.3s
-"     Vikas Agnihotri     : bug report
-"     Steve Hall          : gave a hint for 1.3q
-"     James Devenish      : bug fix
-"     Carl Mueller        : gave a hint for 1.3o
-"     Klaus Fabritius     : bug fix
-"     Stucki              : gave a hint for 1.3m
-"     Rosta               : bug report
-"     Richard Bair        : bug report
-"     Yin Hao Liew        : bug report
-"     Bill McCarthy       : bug fix and gave a hint
-"     Srinath Avadhanula  : bug fix
-"     Ronald Hoellwarth   : few advices
-"     Juan Orlandini      : added higlighting of days with data
-"     Ray                 : bug fix
-"     Ralf.Schandl        : gave a hint for 1.3
-"     Bhaskar Karambelkar : bug fix
-"     Suresh Govindachar  : gave a hint for 1.2, bug fix
-"     Michael Geddes      : bug fix
-"     Leif Wickland       : bug fix
+"     Serge (gentoosiast) Koksharov : bug fix
+"     Vitor Antunes                 : bug fix
+"     Olivier Mengue                : bug fix
+"     Noel Henson                   : today action
+"     Per Winkvist                  : bug report
+"     Peter Findeisen               : bug fix
+"     Chip Campbell                 : gave a hint for 1.3z
+"     PAN Shizhu                    : gave a hint for 1.3y
+"     Eric Wald                     : bug fix
+"     Sascha Wuestemann             : advise
+"     Linas Vasiliauskas            : bug report
+"     Per Winkvist                  : bug report
+"     Ronald Hoelwarth              : gave a hint for 1.3s
+"     Vikas Agnihotri               : bug report
+"     Steve Hall                    : gave a hint for 1.3q
+"     James Devenish                : bug fix
+"     Carl Mueller                  : gave a hint for 1.3o
+"     Klaus Fabritius               : bug fix
+"     Stucki                        : gave a hint for 1.3m
+"     Rosta                         : bug report
+"     Richard Bair                  : bug report
+"     Yin Hao Liew                  : bug report
+"     Bill McCarthy                 : bug fix and gave a hint
+"     Srinath Avadhanula            : bug fix
+"     Ronald Hoellwarth             : few advices
+"     Juan Orlandini                : added higlighting of days with data
+"     Ray                           : bug fix
+"     Ralf.Schandl                  : gave a hint for 1.3
+"     Bhaskar Karambelkar           : bug fix
+"     Suresh Govindachar            : gave a hint for 1.2, bug fix
+"     Michael Geddes                : bug fix
+"     Leif Wickland                 : bug fix
 " Usage:
 "     :Calendar
 "       show calendar at this year and this month
@@ -49,6 +52,8 @@
 "     <Leader>ch
 "       show horizontal calendar ...
 " ChangeLog:
+"     1.5  : bug fix, fixed ruler formating with strpart.
+"            bug fix, using winfixheight.
 "     1.4a : bug fix, week numbenr was broken on 2005.
 "            added calendar_today action.
 "            bug fix, about wrapscan.
@@ -283,7 +288,7 @@
 "       :echo calendar_version
 " GetLatestVimScripts: 52 1 :AutoInstall: calendar.vim
 
-let g:calendar_version = "1.4a"
+let g:calendar_version = "1.5"
 if &compatible
   finish
 endif
@@ -686,7 +691,7 @@ function! Calendar(...)
       let vwruler = g:calendar_wruler
     endif
     if exists('g:calendar_monday')
-      let vwruler = strpart(vwruler,3).' '.strpart(vwruler,0,2)
+      let vwruler = strpart(vwruler,stridx(vwruler, ' ') + 1).' '.strpart(vwruler,0,stridx(vwruler, ' '))
     endif
     let vdisplay2 = vdisplay2.' '.vwruler."\n"
     if g:calendar_mark == 'right'
@@ -936,6 +941,7 @@ function! Calendar(...)
     " or not
     if dir
       execute 'bo '.vheight.'split __Calendar'
+      setlocal winfixheight
     else
       execute 'to '.vcolumn.'vsplit __Calendar'
     endif
@@ -947,6 +953,7 @@ function! Calendar(...)
     setlocal norightleft
     setlocal foldcolumn=0
     setlocal modifiable
+    setlocal nolist
     set nowrapscan
     let b:Calendar='Calendar'
     " is this a vertical (0) or a horizontal (1) split?
