@@ -2,8 +2,8 @@
 " What Is This: Calendar
 " File: calendar.vim
 " Author: Yasuhiro Matsumoto <mattn.jp@gmail.com>
-" Last Change: Wed, 02 May 2007
-" Version: 1.5
+" Last Change: Wed, 25 Jul 2007
+" Version: 1.6
 " Thanks:
 "     Serge (gentoosiast) Koksharov : bug fix
 "     Vitor Antunes                 : bug fix
@@ -52,6 +52,8 @@
 "     <Leader>ch
 "       show horizontal calendar ...
 " ChangeLog:
+"     1.6  : added calendar_begin action.
+"            added calendar_end action.
 "     1.5  : bug fix, fixed ruler formating with strpart.
 "            bug fix, using winfixheight.
 "     1.4a : bug fix, week numbenr was broken on 2005.
@@ -260,6 +262,17 @@
 "       endfunction
 "       let calendar_action = 'MyCalAction'
 "
+"       also, Calendar call following actions when begin or end of display.
+"       them actions are called at one each time when it show 3 months display.
+"
+"       function MyCalActionBegin()
+"       endfunction
+"       let calendar_begin = 'MyCalActionBegin'
+"
+"       function MyCalActionEnd()
+"       endfunction
+"       let calendar_end = 'MyCalActionEnd'
+"
 "     *if you want to show sign in calender,
 "       add this to your .vimrc:
 "
@@ -288,7 +301,7 @@
 "       :echo calendar_version
 " GetLatestVimScripts: 52 1 :AutoInstall: calendar.vim
 
-let g:calendar_version = "1.5"
+let g:calendar_version = "1.6"
 if &compatible
   finish
 endif
@@ -531,6 +544,9 @@ function! Calendar(...)
   "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   "+++ build display
   "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  if exists("g:calendar_begin")
+    exe "call " . g:calendar_begin . "()"
+  endif
   while vmcnt < 3
     let vcolumn = 22
     let vnweek = -1
@@ -900,6 +916,9 @@ function! Calendar(...)
       let vyear = vyear + 1
     endif
   endwhile
+  if exists("g:calendar_end")
+    exe "call " . g:calendar_end . "()"
+  endif
   if a:0 == 0
     return vdisplay1
   endif
